@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cats-vs-dogs-frontend
+  labels:
+    app: cats-vs-dogs-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cats-vs-dogs-frontend
+  template:
+    metadata:
+      labels:
+        app: cats-vs-dogs-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: YOUR_DOCKERHUB_USERNAME/cats-vs-dogs-frontend:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: BACKEND_API_URL
+              value: "http://backend-service:80"
+            - name: DJANGO_DEBUG
+              value: "False"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  selector:
+    app: cats-vs-dogs-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: ClusterIP

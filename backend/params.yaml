@@ -1,0 +1,6 @@
+epochs: 5
+batch_size: 32
+image_size: 224
+optimizer: adam
+learning_rate: 0.0001
+dropout: 0.3

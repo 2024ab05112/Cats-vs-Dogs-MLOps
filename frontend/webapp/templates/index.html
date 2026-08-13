@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cats vs Dogs Classifier | Pet Adoption Platform</title>
+  <meta name="description" content="Upload a pet photo and let our AI tell you if it's a Cat or Dog – powered by MobileNetV2 and deployed on Kubernetes." />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f0f0f0;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 48px 56px;
+      max-width: 520px;
+      width: 92%;
+      text-align: center;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+    }
+
+    .emoji { font-size: 3.5rem; margin-bottom: 16px; }
+
+    h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #a78bfa, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      color: rgba(255,255,255,0.55);
+      font-size: 0.95rem;
+      margin-bottom: 36px;
+    }
+
+    .upload-zone {
+      border: 2px dashed rgba(167,139,250,0.5);
+      border-radius: 16px;
+      padding: 32px 20px;
+      cursor: pointer;
+      transition: border-color 0.3s, background 0.3s;
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .upload-zone:hover { border-color: #a78bfa; background: rgba(167,139,250,0.05); }
+
+    #file-input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .upload-icon { font-size: 2.4rem; margin-bottom: 10px; }
+    .upload-text { color: rgba(255,255,255,0.65); font-size: 0.9rem; }
+    #file-name { margin-top: 8px; font-size: 0.85rem; color: #a78bfa; min-height: 20px; }
+
+    #preview {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 12px;
+      margin: 16px auto 0;
+      display: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.3px;
+    }
+    button[type="submit"]:hover { opacity: 0.9; transform: translateY(-1px); }
+    button[type="submit"]:active { transform: translateY(0); }
+
+    .error-box {
+      background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.4);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #fca5a5;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="emoji">🐾</div>
+    <h1>Cat or Dog?</h1>
+    <p class="subtitle">Upload a pet photo and our AI will identify it instantly</p>
+
+    {% if error %}
+    <div class="error-box">⚠️ {{ error }}</div>
+    {% endif %}
+
+    <form id="predict-form" method="POST" action="/predict/" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="upload-zone" id="drop-zone">
+        <input type="file" name="image" id="file-input" accept="image/*" required />
+        <div class="upload-icon">📷</div>
+        <div class="upload-text">Click to upload or drag & drop<br><small>JPG, PNG, WEBP supported</small></div>
+        <div id="file-name"></div>
+        <img id="preview" alt="Preview" />
+      </div>
+      <button type="submit" id="submit-btn">🔍 Classify Image</button>
+    </form>
+  </div>
+
+  <script>
+    const input = document.getElementById('file-input');
+    const fileName = document.getElementById('file-name');
+    const preview = document.getElementById('preview');
+
+    input.addEventListener('change', () => {
+      const file = input.files[0];
+      if (!file) return;
+      fileName.textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = e => {
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('predict-form').addEventListener('submit', () => {
+      document.getElementById('submit-btn').textContent = '⏳ Classifying...';
+    });
+  </script>
+</body>
+</html>

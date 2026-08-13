@@ -1,0 +1,21 @@
+# ── Unit test dependencies (unpinned for CI flexibility) ──────────────────────
+tensorflow
+numpy
+pillow
+scikit-learn
+mlflow
+dvc
+matplotlib
+seaborn
+tensorflow-datasets
+fastapi
+uvicorn
+python-multipart
+httpx
+prometheus-fastapi-instrumentator
+pyyaml
+tqdm
+# Testing
+pytest==8.3.3
+pytest-asyncio==0.24.0
+flake8==7.1.1

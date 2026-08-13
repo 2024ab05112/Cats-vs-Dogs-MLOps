@@ -1,0 +1,28 @@
+stages:
+  preprocess:
+    cmd: python src/data/preprocess.py
+    deps:
+      - src/data/preprocess.py
+      - data/raw
+    outs:
+      - data/processed
+
+  train:
+    cmd: python -m src.models.train
+    deps:
+      - src/models/train.py
+      - src/models/model.py
+      - src/utils/metrics.py
+      - params.yaml
+    params:
+      - epochs
+      - batch_size
+      - image_size
+      - optimizer
+    outs:
+      - model.h5
+      - artifacts/confusion_matrix.png
+      - artifacts/training_curves.png
+    metrics:
+      - artifacts/metrics.json:
+          cache: false
