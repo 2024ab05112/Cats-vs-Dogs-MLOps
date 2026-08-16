@@ -26,9 +26,16 @@ for _ in range(5):
 if not content:
     content = curr.encode("utf-8")
 
+# ── Sanitize YAML control characters (\r, \x00, etc.) ─────────────────────────
+import string
+text_str = content.decode("utf-8", errors="ignore")
+printable_set = set(string.printable)
+cleaned_str = "".join(c for c in text_str if c in printable_set or c in ("\n", "\t")).replace("\r", "")
+final_bytes = cleaned_str.encode("utf-8")
+
 target_path = os.path.expanduser("~/.kube/config")
 os.makedirs(os.path.dirname(target_path), exist_ok=True)
 with open(target_path, "wb") as f:
-    f.write(content)
+    f.write(final_bytes)
 
-print(f"Kubeconfig successfully written to {target_path} ({len(content)} bytes)")
+print(f"Kubeconfig successfully written to {target_path} ({len(final_bytes)} bytes)")
