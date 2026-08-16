@@ -222,26 +222,23 @@ jobs:
             aws eks update-kubeconfig --name "${AWS_EKS_CLUSTER_NAME}" --region "${AWS_REGION:-us-east-1}"
           elif [[ -n "${KUBECONFIG_BASE64}" ]]; then
             echo "Using KUBECONFIG_BASE64 for AWS EC2 / K3s instance"
-            python3 - << 'EOF'
-import os, base64
-raw = os.environ['KUBECONFIG_BASE64']
-curr = raw
-content = None
-for _ in range(5):
-    if 'apiVersion:' in curr or 'kind: Config' in curr:
-        content = curr.encode('utf-8')
-        break
-    try:
-        s = "".join(curr.split())
-        s += '=' * (-len(s) % 4)
-        curr = base64.b64decode(s).decode('utf-8', errors='ignore')
-    except Exception:
-        break
-if not content:
-    content = curr.encode('utf-8')
-with open(os.path.expanduser('~/.kube/config'), 'wb') as f:
-    f.write(content)
-EOF
+            python3 -c "import os, base64
+            raw = os.environ['KUBECONFIG_BASE64']
+            curr = raw
+            content = None
+            for _ in range(5):
+                if 'apiVersion:' in curr or 'kind: Config' in curr:
+                    content = curr.encode('utf-8')
+                    break
+                try:
+                    s = ''.join(curr.split())
+                    s += '=' * (-len(s) % 4)
+                    curr = base64.b64decode(s).decode('utf-8', errors='ignore')
+                except Exception:
+                    break
+            if not content:
+                content = curr.encode('utf-8')
+            open(os.path.expanduser('~/.kube/config'), 'wb').write(content)"
             chmod 600 ~/.kube/config
           else
             echo "Error: Neither AWS_EKS_CLUSTER_NAME nor KUBECONFIG_BASE64 is provided in GitHub secrets."
