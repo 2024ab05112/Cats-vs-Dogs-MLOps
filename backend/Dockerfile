@@ -18,8 +18,8 @@ COPY main.py .
 COPY src/ ./src/
 COPY params.yaml .
 
-# Copy trained model (must exist before building image)
-COPY model.h5 .
+# Copy trained model if available
+COPY model.h5* .
 
 # Non-root user for security
 RUN useradd -m appuser && chown -R appuser /app
