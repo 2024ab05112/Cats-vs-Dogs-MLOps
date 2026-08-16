@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: YOUR_DOCKERHUB_USERNAME/cats-vs-dogs-frontend:latest
+          image: 2024ab05112/cats-vs-dogs-frontend:latest
           ports:
             - containerPort: 8080
           env:
