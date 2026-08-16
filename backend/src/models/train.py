@@ -23,8 +23,13 @@ IMG_SIZE = (PARAMS["image_size"], PARAMS["image_size"])
 MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5000")
 
 # ── MLflow setup ─────────────────────────────────────────────────────────────
-mlflow.set_tracking_uri(MLFLOW_URI)
-mlflow.set_experiment("cats_vs_dogs_classification")
+try:
+    mlflow.set_tracking_uri(MLFLOW_URI)
+    mlflow.set_experiment("cats_vs_dogs_classification")
+    MLFLOW_AVAILABLE = True
+except Exception as exc:
+    print(f"WARNING: MLflow setup failed: {exc}. Training locally without tracking.")
+    MLFLOW_AVAILABLE = False
 
 
 def preprocess(image, label):
@@ -85,66 +90,69 @@ def main():
     train_ds, val_ds, test_ds = build_datasets()
     model = build_baseline_cnn()
 
-    with mlflow.start_run():
-        # ── Log hyperparameters ──────────────────────────────────────────────
-        mlflow.log_params(
-            {
-                "epochs": EPOCHS,
-                "batch_size": BATCH_SIZE,
-                "image_size": IMG_SIZE[0],
-                "optimizer": PARAMS.get("optimizer", "adam"),
-                "base_model": "MobileNetV2",
-                "learning_rate": 0.0001,
-                "dropout": 0.3,
-            }
-        )
+    # ── Train ────────────────────────────────────────────────────────────
+    history = model.fit(train_ds, validation_data=val_ds, epochs=EPOCHS)
 
-        # ── Train ────────────────────────────────────────────────────────────
-        history = model.fit(train_ds, validation_data=val_ds, epochs=EPOCHS)
+    # ── Evaluate on test set ─────────────────────────────────────────────
+    test_loss, test_acc = model.evaluate(test_ds)
+    print(f"\nTest Accuracy: {test_acc:.4f}  |  Test Loss: {test_loss:.4f}")
 
-        # ── Log per-epoch metrics ────────────────────────────────────────────
-        for epoch in range(EPOCHS):
-            mlflow.log_metrics(
-                {
-                    "train_accuracy": history.history["accuracy"][epoch],
-                    "val_accuracy": history.history["val_accuracy"][epoch],
-                    "train_loss": history.history["loss"][epoch],
-                    "val_loss": history.history["val_loss"][epoch],
-                },
-                step=epoch,
-            )
+    # ── Confusion matrix ─────────────────────────────────────────────────
+    y_true, y_pred = [], []
+    for images, labels in test_ds:
+        preds = model.predict(images, verbose=0)
+        y_true.extend(labels.numpy())
+        y_pred.extend((preds > 0.5).astype(int).flatten())
 
-        # ── Evaluate on test set ─────────────────────────────────────────────
-        test_loss, test_acc = model.evaluate(test_ds)
-        mlflow.log_metrics({"test_accuracy": test_acc, "test_loss": test_loss})
-        print(f"\nTest Accuracy: {test_acc:.4f}  |  Test Loss: {test_loss:.4f}")
+    os.makedirs("artifacts", exist_ok=True)
+    cm_path = "artifacts/confusion_matrix.png"
+    plot_confusion_matrix(
+        y_true=np.array(y_true),
+        y_pred=np.array(y_pred),
+        class_names=["Cat", "Dog"],
+        save_path=cm_path,
+    )
 
-        # ── Confusion matrix ─────────────────────────────────────────────────
-        y_true, y_pred = [], []
-        for images, labels in test_ds:
-            preds = model.predict(images, verbose=0)
-            y_true.extend(labels.numpy())
-            y_pred.extend((preds > 0.5).astype(int).flatten())
+    # ── Loss / accuracy curves ───────────────────────────────────────────
+    curves_path = "artifacts/training_curves.png"
+    plot_loss_curves(history, save_path=curves_path)
 
-        os.makedirs("artifacts", exist_ok=True)
-        cm_path = "artifacts/confusion_matrix.png"
-        plot_confusion_matrix(
-            y_true=np.array(y_true),
-            y_pred=np.array(y_pred),
-            class_names=["Cat", "Dog"],
-            save_path=cm_path,
-        )
-        mlflow.log_artifact(cm_path)
+    # ── Save model ───────────────────────────────────────────────────────
+    model.save("model.h5")
+    print("Model saved locally as model.h5")
 
-        # ── Loss / accuracy curves ───────────────────────────────────────────
-        curves_path = "artifacts/training_curves.png"
-        plot_loss_curves(history, save_path=curves_path)
-        mlflow.log_artifact(curves_path)
-
-        # ── Save model ───────────────────────────────────────────────────────
-        model.save("model.h5")
-        mlflow.log_artifact("model.h5")
-        print("Model saved as model.h5 and logged to MLflow.")
+    # ── Log to MLflow if available ───────────────────────────────────────
+    try:
+        if MLFLOW_AVAILABLE:
+            with mlflow.start_run():
+                mlflow.log_params(
+                    {
+                        "epochs": EPOCHS,
+                        "batch_size": BATCH_SIZE,
+                        "image_size": IMG_SIZE[0],
+                        "optimizer": PARAMS.get("optimizer", "adam"),
+                        "base_model": "MobileNetV2",
+                        "learning_rate": 0.0001,
+                        "dropout": 0.3,
+                    }
+                )
+                for epoch in range(EPOCHS):
+                    mlflow.log_metrics(
+                        {
+                            "train_accuracy": history.history["accuracy"][epoch],
+                            "val_accuracy": history.history["val_accuracy"][epoch],
+                            "train_loss": history.history["loss"][epoch],
+                            "val_loss": history.history["val_loss"][epoch],
+                        },
+                        step=epoch,
+                    )
+                mlflow.log_metrics({"test_accuracy": test_acc, "test_loss": test_loss})
+                mlflow.log_artifact(cm_path)
+                mlflow.log_artifact(curves_path)
+                mlflow.log_artifact("model.h5")
+                print("Logged run to MLflow.")
+    except Exception as exc:
+        print(f"Skipping MLflow logging: {exc}")
 
 
 if __name__ == "__main__":
