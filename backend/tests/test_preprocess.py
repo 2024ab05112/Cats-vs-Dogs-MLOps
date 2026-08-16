@@ -5,7 +5,6 @@ Tests: load_and_resize_image, preprocess_and_split
 import io
 from pathlib import Path
 
-import numpy as np
 import pytest
 from PIL import Image
 

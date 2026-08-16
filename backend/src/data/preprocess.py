@@ -1,4 +1,4 @@
-    """
+"""
 Data preprocessing module for Cats vs Dogs dataset.
 Resizes images to 224x224, converts to RGB, and splits into train/val/test.
 """
