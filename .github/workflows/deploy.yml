@@ -222,7 +222,7 @@ jobs:
             aws eks update-kubeconfig --name "${AWS_EKS_CLUSTER_NAME}" --region "${AWS_REGION:-us-east-1}"
           elif [[ -n "${KUBECONFIG_BASE64}" ]]; then
             echo "Using KUBECONFIG_BASE64 for AWS EC2 / K3s instance"
-            python3 -c "import os, base64; open(os.path.expanduser('~/.kube/config'), 'wb').write(base64.b64decode(os.environ['KUBECONFIG_BASE64'].strip()))"
+            python3 -c "import os, base64; s = os.environ['KUBECONFIG_BASE64'].strip(); s += '=' * (-len(s) % 4); open(os.path.expanduser('~/.kube/config'), 'wb').write(base64.b64decode(s))"
             chmod 600 ~/.kube/config
           else
             echo "Error: Neither AWS_EKS_CLUSTER_NAME nor KUBECONFIG_BASE64 is provided in GitHub secrets."
