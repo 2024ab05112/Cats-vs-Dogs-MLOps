@@ -193,12 +193,19 @@ jobs:
       (needs.build-frontend.result == 'success' || needs.build-frontend.result == 'skipped')
     runs-on: ubuntu-latest
     environment: production
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_EKS_CLUSTER_NAME: ${{ secrets.AWS_EKS_CLUSTER_NAME }}
+      KUBECONFIG_BASE64: ${{ secrets.KUBECONFIG_BASE64 }}
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Configure AWS Credentials
+        if: ${{ env.AWS_ACCESS_KEY_ID != '' }}
         uses: aws-actions/configure-aws-credentials@v4
-        if: ${{ secrets.AWS_ACCESS_KEY_ID != '' }}
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -210,12 +217,12 @@ jobs:
       - name: Configure kubeconfig (AWS EKS or AWS EC2 K3s)
         run: |
           mkdir -p ~/.kube
-          if [[ -n "${{ secrets.AWS_EKS_CLUSTER_NAME }}" ]]; then
-            echo "Updating kubeconfig for AWS EKS cluster: ${{ secrets.AWS_EKS_CLUSTER_NAME }}"
-            aws eks update-kubeconfig --name ${{ secrets.AWS_EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION || 'us-east-1' }}
-          elif [[ -n "${{ secrets.KUBECONFIG_BASE64 }}" ]]; then
+          if [[ -n "${AWS_EKS_CLUSTER_NAME}" ]]; then
+            echo "Updating kubeconfig for AWS EKS cluster: ${AWS_EKS_CLUSTER_NAME}"
+            aws eks update-kubeconfig --name "${AWS_EKS_CLUSTER_NAME}" --region "${AWS_REGION:-us-east-1}"
+          elif [[ -n "${KUBECONFIG_BASE64}" ]]; then
             echo "Using KUBECONFIG_BASE64 for AWS EC2 / K3s instance"
-            echo "${{ secrets.KUBECONFIG_BASE64 }}" | base64 -d > ~/.kube/config
+            echo "${KUBECONFIG_BASE64}" | base64 -d > ~/.kube/config
           else
             echo "Error: Neither AWS_EKS_CLUSTER_NAME nor KUBECONFIG_BASE64 is provided in GitHub secrets."
             exit 1
