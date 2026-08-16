@@ -1,4 +1,4 @@
-# Version: 1.0
+# Version: 1.0.1
 """
 FastAPI inference service for Cats vs Dogs binary classification.
 
