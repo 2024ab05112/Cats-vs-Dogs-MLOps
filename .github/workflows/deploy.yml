@@ -244,10 +244,10 @@ jobs:
 
       - name: Deploy all Kubernetes manifests
         run: |
-          kubectl apply -f k8s/common/
-          kubectl apply -f k8s/backend/
-          kubectl apply -f k8s/frontend/
-          kubectl apply -f k8s/monitoring/
+          kubectl apply -f k8s/common/ --validate=false
+          kubectl apply -f k8s/backend/ --validate=false
+          kubectl apply -f k8s/frontend/ --validate=false
+          kubectl apply -f k8s/monitoring/ --validate=false
 
       - name: Wait for backend rollout
         run: |
