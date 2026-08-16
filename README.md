@@ -124,8 +124,33 @@ dvc repro               # Reproduce preprocess + train pipeline
 
 ---
 
-## ☸️ Kubernetes Deployment
+## ☸️ Kubernetes Deployment on AWS
 
+### Option A: AWS Free Tier (EC2 + K3s) — *100% Free*
+1. Launch an AWS EC2 `t2.micro` or `t3.small` instance (Ubuntu 22.04).
+2. SSH into your instance and run the setup script:
+   ```bash
+   chmod +x aws/setup_k3s_aws_ec2.sh
+   ./aws/setup_k3s_aws_ec2.sh
+   ```
+3. Get the encoded kubeconfig for GitHub Secrets (`KUBECONFIG_BASE64`):
+   ```bash
+   cat /etc/rancher/k3s/k3s.yaml | base64 -w 0
+   ```
+   *(Replace `127.0.0.1` inside `k3s.yaml` with your EC2 Public IP before base64 encoding).*
+
+### Option B: AWS Managed Kubernetes (EKS)
+1. Create an EKS cluster using `eksctl` or AWS Console:
+   ```bash
+   eksctl create cluster --name cats-dogs-cluster --region us-east-1 --nodegroup-name standard-workers --node-type t3.medium --nodes 2
+   ```
+2. Add the following Secrets to your GitHub Repository:
+   - `AWS_ACCESS_KEY_ID`
+   - `AWS_SECRET_ACCESS_KEY`
+   - `AWS_REGION` (e.g., `us-east-1`)
+   - `AWS_EKS_CLUSTER_NAME` (`cats-dogs-cluster`)
+
+### Option C: Manual `kubectl` Apply
 ```bash
 kubectl apply -f k8s/common/
 kubectl apply -f k8s/backend/
