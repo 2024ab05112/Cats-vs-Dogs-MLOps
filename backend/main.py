@@ -12,6 +12,8 @@ import io
 import logging
 import time
 
+from typing import Optional
+
 import numpy as np
 import uvicorn
 from fastapi import FastAPI, File, Request, UploadFile
@@ -70,7 +72,7 @@ async def log_requests(request: Request, call_next):
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────
-def preprocess_image(image_bytes: bytes) -> np.ndarray | None:
+def preprocess_image(image_bytes: bytes) -> Optional[np.ndarray]:
     """Decode bytes -> PIL -> resize -> normalize -> batch dimension."""
     try:
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
