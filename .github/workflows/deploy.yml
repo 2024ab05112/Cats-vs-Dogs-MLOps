@@ -157,7 +157,7 @@ jobs:
   # ── M3: Build & push Frontend Docker image ─────────────────────────────────
   build-frontend:
     needs: [check-changes]
-    if: needs.check-changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch'
+    if: always() && needs.check-changes.result != 'failure'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -222,7 +222,8 @@ jobs:
             aws eks update-kubeconfig --name "${AWS_EKS_CLUSTER_NAME}" --region "${AWS_REGION:-us-east-1}"
           elif [[ -n "${KUBECONFIG_BASE64}" ]]; then
             echo "Using KUBECONFIG_BASE64 for AWS EC2 / K3s instance"
-            echo "${KUBECONFIG_BASE64}" | base64 -d > ~/.kube/config
+            python3 -c "import os, base64; open(os.path.expanduser('~/.kube/config'), 'wb').write(base64.b64decode(os.environ['KUBECONFIG_BASE64'].strip()))"
+            chmod 600 ~/.kube/config
           else
             echo "Error: Neither AWS_EKS_CLUSTER_NAME nor KUBECONFIG_BASE64 is provided in GitHub secrets."
             exit 1
