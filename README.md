@@ -1,12 +1,12 @@
-# 🐾 Cats vs Dogs MLOps Pipeline
+# Cats vs Dogs MLOps Pipeline
 
 **MLOps Assignment 2 | End-to-End Production Pipeline**
 
-Binary image classification for a pet adoption platform — built with MobileNetV2, FastAPI, Django, Docker, Kubernetes, MLflow, Prometheus, and Grafana.
+Binary image classification for a pet adoption platform - built with MobileNetV2, FastAPI, Django, Docker, Kubernetes, MLflow, Prometheus, and Grafana.
 
 ---
 
-## 📐 Architecture
+## Architecture
 
 ```
 GitHub Push
@@ -26,7 +26,7 @@ GitHub Actions CI/CD
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 cats-vs-dogs-mlops/
@@ -38,8 +38,8 @@ cats-vs-dogs-mlops/
 │   │   │   └── train.py            # M1: MLflow experiment tracking
 │   │   └── utils/metrics.py        # Confusion matrix, loss curves
 │   ├── tests/
-│   │   ├── test_preprocess.py      # M3: Unit tests – preprocessing
-│   │   └── test_api.py             # M3: Unit tests – inference API
+│   │   ├── test_preprocess.py      # M3: Unit tests - preprocessing
+│   │   └── test_api.py             # M3: Unit tests - inference API
 │   ├── main.py                     # M2: FastAPI inference service
 │   ├── Dockerfile                  # M2: Containerization
 │   ├── requirements.txt            # M2: Version-pinned dependencies
@@ -55,6 +55,8 @@ cats-vs-dogs-mlops/
 │   ├── monitoring/
 │   └── common/ingress.yml
 ├── monitoring/                     # M5: Prometheus + Grafana config
+├── aws/                            # AWS cluster setup scripts
+│   └── setup_k3s_aws_ec2.sh
 ├── .github/workflows/deploy.yml   # M3/M4: CI/CD pipeline
 ├── docker-compose.yml              # Local development stack
 └── smoke_test.sh                   # M4: Post-deploy validation
@@ -62,7 +64,7 @@ cats-vs-dogs-mlops/
 
 ---
 
-## 🚀 Quick Start (Local)
+## Quick Start (Local)
 
 ### 1. Train the model locally
 
@@ -112,7 +114,7 @@ pytest tests/ -v
 
 ---
 
-## 🔧 DVC – Data Versioning
+## DVC - Data Versioning
 
 ```bash
 cd backend
@@ -124,9 +126,9 @@ dvc repro               # Reproduce preprocess + train pipeline
 
 ---
 
-## ☸️ Kubernetes Deployment on AWS
+## Kubernetes Deployment on AWS
 
-### Option A: AWS Free Tier (EC2 + K3s) — *100% Free*
+### Option A: AWS Free Tier (EC2 + K3s) - 100% Free
 1. Launch an AWS EC2 `t2.micro` or `t3.small` instance (Ubuntu 22.04).
 2. SSH into your instance and run the setup script:
    ```bash
@@ -150,7 +152,7 @@ dvc repro               # Reproduce preprocess + train pipeline
    - `AWS_REGION` (e.g., `us-east-1`)
    - `AWS_EKS_CLUSTER_NAME` (`cats-dogs-cluster`)
 
-### Option C: Manual `kubectl` Apply
+### Option C: Manual kubectl Apply
 ```bash
 kubectl apply -f k8s/common/
 kubectl apply -f k8s/backend/
@@ -160,30 +162,30 @@ kubectl apply -f k8s/monitoring/
 
 ---
 
-## 📊 Modules Coverage
+## Modules Coverage
 
 | Module | Requirement | Status |
 |--------|------------|--------|
-| M1 | Git versioning | ✅ |
-| M1 | DVC dataset versioning | ✅ |
-| M1 | MobileNetV2 model | ✅ |
-| M1 | MLflow tracking | ✅ |
-| M2 | FastAPI REST API | ✅ |
-| M2 | /health + /predict endpoints | ✅ |
-| M2 | requirements.txt (pinned) | ✅ |
-| M2 | Dockerfile + local test | ✅ |
-| M3 | pytest unit tests | ✅ |
-| M3 | GitHub Actions CI | ✅ |
-| M3 | Docker image push | ✅ |
-| M4 | Kubernetes manifests | ✅ |
-| M4 | CD auto-deploy on main | ✅ |
-| M4 | Smoke tests post-deploy | ✅ |
-| M5 | Request/response logging | ✅ |
-| M5 | Prometheus metrics | ✅ |
-| M5 | Grafana dashboards | ✅ |
+| M1 | Git versioning | Completed |
+| M1 | DVC dataset versioning | Completed |
+| M1 | MobileNetV2 model | Completed |
+| M1 | MLflow tracking | Completed |
+| M2 | FastAPI REST API | Completed |
+| M2 | /health + /predict endpoints | Completed |
+| M2 | requirements.txt (pinned) | Completed |
+| M2 | Dockerfile + local test | Completed |
+| M3 | pytest unit tests | Completed |
+| M3 | GitHub Actions CI | Completed |
+| M3 | Docker image push | Completed |
+| M4 | Kubernetes manifests | Completed |
+| M4 | CD auto-deploy on main | Completed |
+| M4 | Smoke tests post-deploy | Completed |
+| M5 | Request/response logging | Completed |
+| M5 | Prometheus metrics | Completed |
+| M5 | Grafana dashboards | Completed |
 
 ---
 
-## 👥 Team
+## Team
 
-*MLOps Assignment 2 – Cats vs Dogs Classification*
+MLOps Assignment 2 - Cats vs Dogs Classification

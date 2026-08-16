@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cats vs Dogs Classifier | Pet Adoption Platform</title>
-  <meta name="description" content="Upload a pet photo and let our AI tell you if it's a Cat or Dog – powered by MobileNetV2 and deployed on Kubernetes." />
+  <meta name="description" content="Upload a pet photo and let our AI tell you if it's a Cat or Dog - powered by MobileNetV2 and deployed on Kubernetes." />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -29,8 +29,6 @@
       text-align: center;
       box-shadow: 0 24px 80px rgba(0,0,0,0.4);
     }
-
-    .emoji { font-size: 3.5rem; margin-bottom: 16px; }
 
     h1 {
       font-size: 1.9rem;
@@ -67,7 +65,6 @@
       height: 100%;
     }
 
-    .upload-icon { font-size: 2.4rem; margin-bottom: 10px; }
     .upload-text { color: rgba(255,255,255,0.65); font-size: 0.9rem; }
     #file-name { margin-top: 8px; font-size: 0.85rem; color: #a78bfa; min-height: 20px; }
 
@@ -109,24 +106,22 @@
 </head>
 <body>
   <div class="card">
-    <div class="emoji">🐾</div>
-    <h1>Cat or Dog?</h1>
+    <h1>Cat or Dog Classifier</h1>
     <p class="subtitle">Upload a pet photo and our AI will identify it instantly</p>
 
     {% if error %}
-    <div class="error-box">⚠️ {{ error }}</div>
+    <div class="error-box">Error: {{ error }}</div>
     {% endif %}
 
     <form id="predict-form" method="POST" action="/predict/" enctype="multipart/form-data">
       {% csrf_token %}
       <div class="upload-zone" id="drop-zone">
         <input type="file" name="image" id="file-input" accept="image/*" required />
-        <div class="upload-icon">📷</div>
         <div class="upload-text">Click to upload or drag & drop<br><small>JPG, PNG, WEBP supported</small></div>
         <div id="file-name"></div>
         <img id="preview" alt="Preview" />
       </div>
-      <button type="submit" id="submit-btn">🔍 Classify Image</button>
+      <button type="submit" id="submit-btn">Classify Image</button>
     </form>
   </div>
 
@@ -148,7 +143,7 @@
     });
 
     document.getElementById('predict-form').addEventListener('submit', () => {
-      document.getElementById('submit-btn').textContent = '⏳ Classifying...';
+      document.getElementById('submit-btn').textContent = 'Classifying...';
     });
   </script>
 </body>

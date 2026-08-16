@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# smoke_test.sh — Post-deployment health validation (M4 requirement)
+# smoke_test.sh - Post-deployment health validation (M4 requirement)
 # Fails the pipeline if any critical endpoint is unreachable.
 
 set -euo pipefail
@@ -30,7 +30,7 @@ check_endpoint() {
             return 0
         fi
 
-        echo "   [WAIT] Got $code, expected $expected_code — attempt $((retries+1))/$MAX_RETRIES"
+        echo "   [WAIT] Got $code, expected $expected_code - attempt $((retries+1))/$MAX_RETRIES"
         sleep "$SLEEP_SEC"
         retries=$((retries+1))
     done
@@ -50,6 +50,6 @@ check_endpoint "/api/metrics" 200 "Prometheus Metrics"
 
 echo ""
 echo "================================================"
-echo "  ALL SMOKE TESTS PASSED ✓"
+echo "  ALL SMOKE TESTS PASSED"
 echo "================================================"
 exit 0

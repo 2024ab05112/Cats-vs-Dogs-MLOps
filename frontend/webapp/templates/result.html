@@ -24,8 +24,6 @@
       text-align: center;
       box-shadow: 0 24px 80px rgba(0,0,0,0.4);
     }
-    .result-icon { font-size: 5rem; margin-bottom: 16px; animation: bounce 0.6s ease; }
-    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
     h1 {
       font-size: 2rem; font-weight: 700;
       background: linear-gradient(90deg, #a78bfa, #60a5fa);
@@ -58,28 +56,25 @@
 </head>
 <body>
   <div class="card">
-    <div class="result-icon">
-      {% if result.predicted_label == 'Dog' %}🐶{% else %}🐱{% endif %}
-    </div>
     <h1>Classification Result</h1>
     <div class="label">{{ result.predicted_label }}</div>
     <div class="confidence">Confidence: {{ result.confidence|floatformat:2 }}</div>
-    <p class="filename">📁 {{ filename }}</p>
+    <p class="filename">File: {{ filename }}</p>
 
     <div class="prob-bar-container">
-      <div class="prob-label"><span>🐱 Cat</span><span>{{ result.probabilities.cat|floatformat:3 }}</span></div>
+      <div class="prob-label"><span>Cat</span><span>{{ result.probabilities.cat|floatformat:3 }}</span></div>
       <div class="prob-bar">
         <div class="prob-fill cat-fill" style="width: {% widthratio result.probabilities.cat 1 100 %}%"></div>
       </div>
     </div>
     <div class="prob-bar-container" style="margin-bottom: 32px;">
-      <div class="prob-label"><span>🐶 Dog</span><span>{{ result.probabilities.dog|floatformat:3 }}</span></div>
+      <div class="prob-label"><span>Dog</span><span>{{ result.probabilities.dog|floatformat:3 }}</span></div>
       <div class="prob-bar">
         <div class="prob-fill dog-fill" style="width: {% widthratio result.probabilities.dog 1 100 %}%"></div>
       </div>
     </div>
 
-    <a href="/">🔄 Classify Another</a>
+    <a href="/">Classify Another Image</a>
   </div>
 </body>
 </html>
