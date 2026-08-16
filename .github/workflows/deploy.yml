@@ -220,13 +220,16 @@ jobs:
           if [[ -n "${AWS_EKS_CLUSTER_NAME}" ]]; then
             echo "Updating kubeconfig for AWS EKS cluster: ${AWS_EKS_CLUSTER_NAME}"
             aws eks update-kubeconfig --name "${AWS_EKS_CLUSTER_NAME}" --region "${AWS_REGION:-us-east-1}"
+          elif chmod +x .github/scripts/fetch_kubeconfig_ssm.sh && .github/scripts/fetch_kubeconfig_ssm.sh; then
+            echo "Kubeconfig fetched live via SSM."
           elif [[ -n "${KUBECONFIG_BASE64}" ]]; then
+            echo "SSM fetch failed or unavailable; falling back to KUBECONFIG_BASE64 secret."
             python3 .github/scripts/decode_kubeconfig.py
-            chmod 600 ~/.kube/config
           else
-            echo "Error: Neither AWS_EKS_CLUSTER_NAME nor KUBECONFIG_BASE64 is provided in GitHub secrets."
+            echo "Error: Could not fetch kubeconfig via SSM and no KUBECONFIG_BASE64 fallback secret is set."
             exit 1
           fi
+          chmod 600 ~/.kube/config
 
       - name: Update backend image tag in manifests
         run: |
@@ -273,3 +276,28 @@ jobs:
           ./smoke_test.sh
         env:
           BASE_URL: ${{ secrets.APP_BASE_URL }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: pip install -r requirements.txt
+
+      - name: Run post-deploy model performance tracking (M5)
+        working-directory: ./backend
+        run: python -m src.monitoring.post_deploy_eval
+        env:
+          API_BASE_URL: ${{ secrets.APP_BASE_URL }}
+
+      - name: Upload post-deploy performance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-deploy-performance-report
+          path: backend/artifacts/post_deploy_performance.json
+          retention-days: 30

@@ -116,30 +116,58 @@ pytest tests/ -v
 
 ## DVC - Data Versioning
 
+DVC is initialized in `backend/` with an S3 remote (`s3://cats-dogs-mlops-dvc-725397331485/dvcstore`,
+private bucket). `data/raw.dvc` and `dvc.lock` are committed to git and point at the versioned
+dataset in the remote; the actual image bytes live in S3, not in git.
+
 ```bash
 cd backend
-dvc init
-dvc add data/raw        # Track raw dataset
-dvc push                # Push to remote storage
-dvc repro               # Reproduce preprocess + train pipeline
+dvc pull                 # Fetch versioned dataset from the S3 remote
+dvc repro                # Reproduce preprocess + train pipeline
+# After changing the dataset:
+dvc add data/raw
+dvc push
+git add data/raw.dvc dvc.lock
+git commit -m "data: update dataset version"
 ```
+
+Note: `data/raw` currently holds a small representative sample used to exercise the DVC
+pipeline end-to-end (`dvc add`/`push`/`pull` + `preprocess.py` -> `data/processed`). Actual
+model training uses the full public Cats vs Dogs dataset pulled via `tensorflow-datasets`
+in `src/models/train.py`, independent of this sample.
 
 ---
 
 ## Kubernetes Deployment on AWS
 
 ### Option A: AWS Free Tier (EC2 + K3s) - 100% Free
-1. Launch an AWS EC2 `t2.micro` or `t3.small` instance (Ubuntu 22.04).
-2. SSH into your instance and run the setup script:
+1. Launch the instance with `aws/launch_ec2_k3s.py` (attaches the `cats-dogs-k8s-ssm-profile`
+   IAM instance profile so it's reachable via AWS Systems Manager - no SSH key needed), or
+   launch manually and run the setup script:
    ```bash
    chmod +x aws/setup_k3s_aws_ec2.sh
    ./aws/setup_k3s_aws_ec2.sh
    ```
-3. Get the encoded kubeconfig for GitHub Secrets (`KUBECONFIG_BASE64`):
+2. The CI/CD pipeline fetches a fresh kubeconfig from the instance automatically on every
+   deploy via SSM (`.github/scripts/fetch_kubeconfig_ssm.sh`) - no manual secret to keep in
+   sync. If SSM is ever unavailable, it falls back to the `KUBECONFIG_BASE64` GitHub secret;
+   to set that manually:
    ```bash
    cat /etc/rancher/k3s/k3s.yaml | base64 -w 0
    ```
    *(Replace `127.0.0.1` inside `k3s.yaml` with your EC2 Public IP before base64 encoding).*
+3. Services are exposed via NodePort on the instance's public IP:
+
+   | Service | NodePort URL |
+   |---|---|
+   | Backend API | `http://<EC2_PUBLIC_IP>:30800` |
+   | Frontend | `http://<EC2_PUBLIC_IP>:30880` |
+   | MLflow | `http://<EC2_PUBLIC_IP>:30500` |
+   | Prometheus | `http://<EC2_PUBLIC_IP>:30909` |
+   | Grafana | `http://<EC2_PUBLIC_IP>:30300` |
+
+   Set the `APP_BASE_URL` GitHub secret to the backend URL above (used by `smoke_test.sh`
+   and the post-deploy performance tracking step).
 
 ### Option B: AWS Managed Kubernetes (EKS)
 1. Create an EKS cluster using `eksctl` or AWS Console:
@@ -183,6 +211,7 @@ kubectl apply -f k8s/monitoring/
 | M5 | Request/response logging | Completed |
 | M5 | Prometheus metrics | Completed |
 | M5 | Grafana dashboards | Completed |
+| M5 | Post-deployment performance tracking | Completed |
 
 ---
 

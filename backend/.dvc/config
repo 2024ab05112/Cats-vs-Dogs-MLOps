@@ -1,0 +1,5 @@
+[core]
+    remote = storage
+['remote "storage"']
+    url = s3://cats-dogs-mlops-dvc-725397331485/dvcstore
+    region = us-east-1

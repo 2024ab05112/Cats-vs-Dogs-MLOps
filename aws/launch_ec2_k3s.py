@@ -39,6 +39,7 @@ else:
       --image-id {ami_id} \
       --instance-type t3.small \
       --security-group-ids {sg_id} \
+      --iam-instance-profile Name=cats-dogs-k8s-ssm-profile \
       --user-data file:///tmp/userdata.sh \
       --tag-specifications 'ResourceType=instance,Tags=[{{Key=Name,Value=cats-dogs-k8s-node}}]' \
       --block-device-mappings '[{{"DeviceName":"/dev/sda1","Ebs":{{"VolumeSize":20,"VolumeType":"gp3"}}}}]' \
